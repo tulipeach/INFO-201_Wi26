@@ -1,0 +1,324 @@
+---
+title: "Final Project Deliverable 2"
+authors: "Amina Ali, Adiba Saadullah, Khadija Saho"
+format: 
+  html:
+     embed-resources: true
+editor: visual
+---
+
+# Section 0
+
+Load libraries and datasets.
+
+```{r}
+#| warning: false
+
+# Load libraries
+library(ggplot2)
+library(dplyr)
+library(stringr)
+
+# Load datasets
+gii <- read.csv("Gender_Inequality_Index.csv")
+cpi <- read.csv("Corruption_Perception_Index.csv")
+```
+
+# Section 1
+
+## 1.1 Gender Inequality Index (GII) - Dataset 1
+
+Kaggle Link:\
+<https://www.kaggle.com/datasets/gianinamariapetrascu/gender-inequality-index>
+
+Original Source Link:\
+<https://hdr.undp.org/data-center/thematic-composite-indices/gender-inequality-index#/indicies/GII>
+
+The Gender Inequality Index is collected and published by the United Nations Development Programme (UNDP) as part of the Human Development Report.
+
+#### Who Collected It?
+
+The UNDP collects and compiles the data using internationally recognized data sources such as:
+
+-   World Health Organization
+-   World Bank
+-   Inter-Parliamentary Union
+-   United Nations Population Division
+
+#### Why Is the Source Reliable?
+
+The UNDP is a global organization that is a part of the United Nations system. They publish annual Human Development Reports using standardized international indicators. Their data is widely used in academic research, policy analysis, and global development work. This makes the data reliable for use, showing that the dataset has real-world, internationally recognized development indicators, and is not synthetic or generated data.
+
+#### Year Created
+
+The dataset spans multiple years. The Kaggle version includes data from recent years (around 2010–2021 depending on version), based on UNDP Human Development Reports.
+
+#### Data Meaning
+
+The Gender Inequality Index measures inequality between men and women across three key dimensions:
+
+1.  Reproductive Health
+    -   Maternal mortality ratio
+    -   Adolescent birth rate
+2.  Empowerment
+    -   Share of parliamentary seats held by women
+    -   Educational attainment
+3.  Labor Market Participation
+    -   Labor force participation rate
+
+The index ranges from 0 to 1:
+
+-   0 = perfect equality
+-   1 = extreme inequality
+
+The Gender Inequality Index Dataset measures real structural gender disparities, like in health, empowerment, and labor market participation, for over 190 countries. The dataset scores range from 0 (equality) to 1 (high inequality) and includes values like maternal mortality, representation, education levels, and labor force participation.
+
+## 1.2 Corruption Perceptions Index (CPI) - Dataset 2
+
+Kaggle Link:\
+<https://www.kaggle.com/datasets/transparencyint/corruption-index>
+
+Original Source Link:\
+https://www.transparency.org/en/cpi/2016
+
+#### Who Collected It?
+
+The Corruption Perceptions Index is produced annually by Transparency International, a global non-governmental organization focused on anti-corruption efforts.
+
+The CPI is compiled using:
+
+-   Expert assessments
+-   Business surveys
+-   Data from institutions like the World Bank and World Economic Forum
+
+#### Why Is the Source Reliable?
+
+Transparency International is another internationally recognized and widely cited in academic research, policy reports, and global governance analysis. The CPI is one of the most widely used global indicators of public sector corruption. It is not synthetic or generated data; it is based on aggregated survey data and expert evaluations.
+
+#### Year Created
+
+The CPI has been published annually since 1995, up to 2025. The Kaggle dataset we are using includes data from 2012 - 2016.
+
+#### Data Meaning
+
+The Corruption Perceptions Index measures levels of public sector corruption in countries worldwide.This dataset represents governance quality and institutional integrity across countries.
+
+The index ranges from:
+
+-   0 = highly corrupt
+-   100 = very clean (low corruption)
+
+#### How the Two Data Sets Relate
+
+These datasets can be meaningfully joined by **Country** since both have unique country names. Both datasets contain more than 100 rows and 3+ columns. To do this, we may need to standardize the country names to match exactly with each other and fix any capitalization or spacing disparities in order to successfully join. There may be missing values for some countries or missing/additional countries in either dataset which we would need to consider.
+
+#### Why This Join Is Meaningful
+
+1.  The Gender Inequality Index measures structural inequality between men and women.
+
+2.  The Corruption Perceptions Index measures governance quality and institutional corruption.
+
+3.  By joining these datasets, we can explore questions such as:
+
+    1.  Do countries with higher corruption tend to have higher gender inequality?
+    2.  Is stronger governance associated with better gender equity outcomes?
+    3.  Are institutional systems linked to gender empowerment?
+
+4.  This connection is theoretically meaningful because corruption often weakens:
+
+    1.  Public services
+    2.  Accountability
+    3.  Social protections
+
+This may disproportionately affect women and marginalized populations.
+
+## 1.5 Data Observations
+
+The GII dataset contains about 195 rows (of unique countries) and 10 columns, including:
+
+-   Country
+-   Year
+-   Gender Inequality Index (GII) value
+-   Maternal mortality ratio
+-   Adolescent birth rate
+-   Share of parliamentary seats held by women
+-   Educational attainment
+-   Labor force participation rate
+
+The preview below shows that most variables are numeric and represent country-level development indicators. Each row corresponds to a country-year observation. It spans multiple years, from around 2021 in the dataset we are using.
+
+```{r}
+glimpse(gii)
+```
+
+The CPI dataset contains about 176 rows (of unique countries) and 9 columns, including:
+
+-   Country
+-   Country region
+-   CPI score (multiple years)
+-   CPI rank
+-   Year
+
+Each row represents a country’s corruption score for a specific year. The Kaggle version of the dataset includes data from 2012–2016. The CPI score ranges from 0 to 100, where lower values indicate higher perceived corruption and higher values indicate lower perceived corruption.
+
+```{r}
+glimpse(cpi)
+```
+
+## 1.6 Data Issues
+
+**In the GII dataset,** there are some data quality issues, but they are very minimal. Firstly, for some countries, there are missing values for many of the indicators. For example, some countries do not have a GII index or values like the maternal mortality rate or percent of seats in parliament, which would interfere with our analyzation if we do not have certain values to compare all of them with. Also, there might be some data cleaning issues. For example, there may be spacing issues, capitalization, spelling, or spacing issues in the non-numerical data, which could throw off the joining. Some country names may also need to be standardized, such as if a country is written as United States versus United States of America.
+
+**In terms of the CPI dataset,** the data could be a bit outdated since it is from 2012 to 2016 only, while the GII dataset is from more recent years. We may need to consider how comparable they are. Also, there might be some countries that are either missing or added in one dataset than the other, which could create mismatches, or we could find that the final joined dataset has a lower number of matched observations after the join than we expected. The CPI index does not have as many missing numbers as the GII index. Other than that, the CPI Perceptions Index dataset numbers are very straightforward so there should be minimal data cleaning needed there.
+
+For both datasets, missing values are signified by blank cells. Overall, none of the observed data issues are significant enough to impact the reliability of the data sources.
+
+# Section 2
+
+```{r}
+#| warning: false
+
+# Data prep steps before joining:
+# Standardized country names (trimmed whitespace, consistent capitalization)
+# Removed rows with missing country names
+
+gii <- gii |>
+  mutate(Country = str_trim(Country),
+         Country = str_to_title(Country)) |>
+  filter(!is.na(Country))
+
+cpi <- cpi |>
+  mutate(Country = str_trim(Country),
+         Country = str_to_title(Country)) |>
+  filter(!is.na(Country))
+
+glimpse(gii)
+glimpse(cpi)
+
+# Joined datasets on the 'Country' column using left join
+joined_data <- left_join(gii, cpi, by = "Country")
+
+# Check structure of joined data
+colnames(joined_data)
+nrow(joined_data)
+glimpse(joined_data)
+```
+
+# Section 3
+
+## 3.1 Gender Inequality Index (GII) - Dataset 1
+
+**Source:** Kaggle – [Gender Inequality Index](https://www.kaggle.com/datasets/gianinapetrascu/gender-inequality-index)
+
+**Codebook / Column Descriptions:**
+
+No official codebook provided; column descriptions summarized from Kaggle metadata.
+
+|  |  |
+|------------------------------------|------------------------------------|
+| **Column** | **Description** |
+| Country | Country name |
+| Human_development | Human development category (Low – Very High) |
+| GII | Gender Inequality Index (0–1) |
+| Rank | Country rank based on GII |
+| Maternal_mortality | Maternal mortality ratio (deaths per 100,000 live births) |
+| Adolescent_birth_rate | Adolescent birth rate (births per 1,000 women ages 15–19) |
+| Seats_parliament | Share of seats in parliament (% held by women) |
+| F_secondary_educ | Females with at least some secondary education (% ages 25+) |
+| M_secondary_educ | Males with at least some secondary education (% ages 25+) |
+| F_Labour_force | Female labor force participation rate (% ages 15+) |
+
+## 3.2 Corruption Perceptions Index (CPI) - Dataset 2
+
+**Source:** Kaggle – [Corruption Perceptions Index](https://www.kaggle.com/datasets/transparency-international/corruption-perceptions-index)
+
+**Codebook / Column Descriptions:**
+
+No official codebook provided; column descriptions summarized from Kaggle metadata.
+
+|  |  |
+|------------------------------------|------------------------------------|
+| **Column** | **Description** |
+| Country | Country name |
+| Country Code | 3-letter ISO country code |
+| Region | Geographic region |
+| CPI 2012 Score | Corruption Perceptions Index score for 2012 (higher = less perceived corruption) |
+| CPI 2013 Score | CPI score for 2013 |
+| CPI 2014 Score | CPI score for 2014 |
+| CPI 2015 Score | CPI score for 2015 |
+| CPI 2016 Score | CPI score for 2016 |
+| CPI 2016 Rank | Country rank for 2016 based on CPI |
+
+*Note: The Kaggle page did not provide a formal codebook from the original publisher. We inferred the column meanings from UNDP and Transparency International official documentation.*
+
+### 3.3 Relevant Variables for Analysis
+
+We are combining data by country, as each country in the dataset is unique. We can join the datasets using either a left join or inner join depending on what we want to keep. Our main variables are the GII (Gender Inequality Index) and the CPI (Corruption Perception Index), which allow us to explore how corruption relates to gender inequality. Other variables, like percent of female seats in parliament or education metrics could provide additional insights about social and government factors.
+
+Overall, our aim is to analyze the relationship between corruption and gender inequality and understand what this relationship reveals about the political, legal, and social state of countries around the world. Our thinking is that countries with more gender inequality also have more corruption, and we are testing whether this is true. We want to uncover what the relationship is between gender inequality and corruption in society.
+
+### 3.4 Potential Biases, Missing Data, Human Rights
+
+The data we are using may reflect some biases or limitations that may be harmful if overlooked. The biggest bias of comparing the GII and CPI is the time mismatch. The GII is from 2021, while the CPI is from 2012 to 2016, so conditions may have changed or new factors may have been introduced in those five years, making them not ideal to compare since the years don’t completely overlap. Also, the CPI measures perceived corruption, not actual corruption, so there might be biases in these perceptions, such as differences in researcher reporting standards. The GII measures some aspects of inequality but does not include others, such as economic inequality, wage gaps, or the cultural context of each country. Furthermore, both datasets aggregate data at the country level, which may mask differences within regions, local areas, or states, hiding certain inequalities or factors. And perhaps the largest inequality, the indices consider gender as binary, only male and female, overlooking non-traditional gender identities and LGBTQ+ populations, which may be mischaracterized. Transparency may also be a problem, as some countries may not have the proper infrastructure to report accurately, potentially underreporting or misreporting statistics. Finally, since the CPI focuses on government corruption, not private sector corruption, this may influence results.
+
+# Section 4
+
+### 4.1 Cleaned Columns
+
+**What We Did:** Converted GII and CPI. Rank to numeric and removed columns with over 50% missing values.
+
+**Why:** Some numeric variables were read as character due to formatting issues and some columns had data that was catered to a certain region, leaving them blank for a lot of countries. Converting them ensures proper statistical analysis and visualization and removes mostly empty columns to improve dataset quality.
+
+```{r}
+
+joined_data <- joined_data |>
+  mutate(GII = as.numeric(GII),
+         CPI.2016.Rank = as.numeric(CPI.2016.Rank))
+
+cleaned_data <- joined_data |>
+  select(where(~ mean(is.na(.)) < 0.3))
+
+# mean (is.na(.)) calculates the proportion of missing values in each column, < 0.3 keeps only columns where less than 30% of the values are missing, select(where()) applies this rule across all columns
+
+```
+
+### 4.2 Cleaned Rows
+
+**What We Did:** Removed rows with missing values in key variables (GII and CPI score).
+
+**Why:** We are investigating the relationship between gender inequality and corruption. Missing values would interfere with correlation and visualization.
+
+```{r}
+
+cleaned_data <- cleaned_data |>
+  filter(!is.na(GII),
+         !is.na(CPI.2016.Rank))
+```
+
+### 4.3 Graph
+
+**What We Did:** Created a scatterplot showing the relationship between GII and CPI score.
+
+**Why:** We want to visually investigate whether higher gender inequality is associated with higher perceived corruption.
+
+```{r}
+
+library(ggplot2)
+
+ggplot(cleaned_data, aes(x = GII, y = CPI.2016.Rank)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) + #geom_smooth used to create smooth conditional mean line to view trend.
+  labs(title = "Gender Inequality vs Corruption Perception",
+       x = "Gender Inequality Index",
+       y = "Corruption Perception Index Score")
+```
+
+#### 4.3.1 Graph Explanation
+
+This scatterplot shows the relationship between the Gender Inequality Index (GII) and the Corruption Perceptions Index (CPI) score across countries. Each point represents one country and the x-axis (GII) measures gender inequality, where higher values indicate more inequality while the y-axis (CPI score) measures perceived corruption, where lower scores indicate higher levels of corruption. The linear trend line (fitted using a regression model) shows the overall direction of the relationship between the two variables.
+
+#### 4.3.2 Graph Overall Trends
+
+The downward-sloping trend line suggests a negative relationship between gender inequality and corruption perception. This means that countries with higher gender inequality tend to have lower CPI scores (lower CPI scores indicate higher perceived corruption). In other words, countries with greater gender inequality generally also experience higher levels of perceived corruption.
+
+*GenAI Note: ChatGPT was used responsibly to assist with formatting the Quarto document, organizing written responses to align with the project rubric, and for improving clarity and grammar.*
