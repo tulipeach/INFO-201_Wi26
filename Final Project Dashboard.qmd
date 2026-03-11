@@ -1,0 +1,354 @@
+---
+title: "Gender Inequality & Corruption by Country"
+author: ""
+format:
+  dashboard:
+    embed-resources: true
+theme: pulse
+editor: visual
+logo: "https://ischool.uw.edu/fb-300x300.png"
+---
+
+```{r}
+#| warning: false
+
+# Load libraries
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(plotly)
+
+# Load datasets
+gii <- read.csv("Gender_Inequality_Index.csv")
+cpi <- read.csv("Corruption_Perception_Index.csv")
+```
+
+```{r}
+#| warning: false
+
+# DATA CLEANING AND JOINING STEPS
+# 1. Standardize country names
+gii <- gii |>
+  mutate(Country = str_to_title(str_trim(Country))) |>
+  filter(!is.na(Country))
+
+cpi <- cpi |>
+  mutate(Country = str_to_title(str_trim(Country))) |>
+  filter(!is.na(Country))
+
+# 2. Join datasets
+joined_data <- left_join(gii, cpi, by = "Country")
+
+# 3. Convert important columns to numeric
+joined_data <- joined_data |>
+  mutate(
+    GII = as.numeric(GII),
+    CPI.2016.Rank = as.numeric(CPI.2016.Rank),
+    CPI.2016.Score = as.numeric(CPI.2016.Score)
+  )
+
+# 4. Remove columns with >30% missing values
+cleaned_data <- joined_data |>
+  select(where(~ mean(is.na(.)) < 0.3))
+
+# 5. Remove rows with important missing values
+cleaned_data <- cleaned_data |>
+  filter(!is.na(GII), !is.na(CPI.2016.Rank), !is.na(CPI.2016.Score))
+
+# 6. Prepare variable for plots (higher = more corruption)
+cleaned_data <- cleaned_data |>
+  mutate(Corruption_Level = 100 - CPI.2016.Score)
+```
+
+# Introduction
+
+## Row {height="360px"}
+
+### Column {width="50%"}
+
+::: {.card title="Topic Overview"}
+**Gender inequality and corruption** are two major global challenges that influence the political systems, economic development, and social infrastructure of countries. This project explores the relationship between gender inequality and corruption across more than 120 unique countries using international development datasets. This relationship is important to understand because the quality of governments and social inequality are often connected. Research suggests that government corruption can disproportionately harm women and marginalized groups because it leads to decreased government accountability and lower quality public services. For example, corruption in public institutions may reduce equal access to healthcare, education, or employment opportunities, which can reinforce gender inequality. It may also limit opportunities for women in areas of political participation, potentially creating a cycle in which lower representation allows corruption and inequality to persist.
+
+For our analysis, we combined two international datasets collected by trusted sources. The first dataset is the **Gender Inequality Index (GII)**, sourced from Kaggle and originally collected by the United Nations Development Programme (UNDP). It measures disparities between men and women in areas such as reproductive health, political representation, education levels, and labor force participation. The second dataset, also sourced from Kaggle, is the **Corruption Perceptions Index (CPI)**, published by Transparency International. It measures levels of public sector corruption by year based on expert assessments, business surveys, and data from institutions such as the World Bank and the World Economic Forum. Links to the original datasets are provided in the Data Context page.
+:::
+
+## Row {height="400px"}
+
+### Column {width="50%"}
+
+::: {.card title="Big-Picture Questions & Topic Significance"}
+We joined these datasets **by country**, allowing us to explore questions such as:
+
+**1. How is Gender Inequality Associated with Corruption?**
+
+**2. How does women’s representation in government relate to corruption levels?**
+
+**3. Are there regional patterns in gender inequality and corruption?**
+
+\
+Analysis of this topic is both interesting and important because it **reveals how governance quality affects social equality worldwide,** and vice versa. Our visualizations provide insight into the political, legal, and social conditions of countries, helping to determine whether the relationship between the two variables is consistent or if there are outliers, and what may be unique about them that we can learn from. Since both factors affect quality of life, understanding this relationship helps explain why some countries struggle more with development and what historical factors may play a role. Finally, our analysis can help policymakers make reforms, as governments may need to address both issues together.
+:::
+
+### Column {width="50%"}
+
+![](https://preview.redd.it/utv9vrnpqg161.png?auto=webp&s=e3c244b2ad18cfc1da93d909caf9ba5e7b36fc0b){width="100%"}
+
+## Row {height="250px"}
+
+### Column {width="50%"}
+
+::: {.card title="Analysis Limitations"}
+There are certain ethical limitations to consider when using these datasets, as outlined below:
+
+1.  The CPI measures perceived corruption, not actual corruption, which may introduce bias depending on the nature of the expert assessments.
+
+2.  The GII measures gender using a binary male/female framework, excluding nonbinary and LGBTQ+ identities.
+
+3.  Both datasets aggregate data at the national level, potentially hiding regional or local inequalities.
+
+4.  The GII dataset is more recent (around 2021), while the CPI dataset is from 2012–2016 (2016 is mostly used). This mismatch may misrepresent current realities, so results should not be assumed to accurately reflect present conditions.
+:::
+
+# Data Context
+
+## Row
+
+### Column {width="50%"}
+
+::: {.card title="Dataset 1: Gender Inequality Index"}
+**Collected by:** United Nations Development Programme (UNDP) using data from the World Health Organization, World Bank, Inter-Parliamentary Union, and United Nations Population Division.
+
+**Link to dataset:** https://www.kaggle.com/datasets/gianinamariapetrascu/gender-inequality-index.
+
+**Original source/more information:** https://hdr.undp.org/data-center/thematic-composite-indices/gender-inequality-index#/indicies/GII
+
+**Description / Measurements:** The GII measures structural gender disparities across three dimensions: reproductive health (maternal mortality ratio, adolescent birth rate), empowerment (share of parliamentary seats held by women, female secondary education attainment), and labor market participation (female labor force participation rate). Each country-year observation records numeric values for these indicators, with scores ranging from 0 (gender equality) to 1 (high inequality). The dataset contains approximately 195 countries and 11 columns, covering indicators like maternal mortality, adolescent birth rates, female parliamentary representation, secondary education, and labor force participation.
+
+**Time and Context:** Data in from 2021 and covers over 190 countries worldwide.
+
+**Population Coverage:** This sample allows for comparisons across most countries globally, providing a strong indication of structural gender disparities. A limitation is that some countries have missing values for certain indicators, and the index only measures binary gender (male/female), overlooking nonbinary populations.
+:::
+
+::: {.card title="Dataset 1 Preview"}
+```{r}
+head(gii)
+```
+:::
+
+### Column {width="50%"}
+
+::: {.card title="Dataset 2: Corruption Perception Index"}
+**Collected by:** Transparency International using expert assessments, business surveys, and institutional data (World Bank, World Economic Forum).
+
+**Link to dataset:** https://www.kaggle.com/datasets/transparencyint/corruption-index.
+
+**Original source/more information:** https://www.transparency.org/en/cpi/2016
+
+**Description / Measurements:** The CPI measures perceived public sector corruption across countries, including bribery, diversion of public funds, abuse of office, and government transparency. Scores range from 0 (highly corrupt) to 100 (very clean). Each country-year observation records a numeric CPI score. The dataset contains approximately 176 country-year observations and 9 columns, covering CPI scores and ranks from 2012 to 2016, allowing comparisons of perceived corruption levels across nations.
+
+**Time and Context:** The dataset includes data from 2012–2016, covering over 170 countries worldwide.
+
+**Population Coverage:** The sample allows for assessment of corruption perceptions across a broad set of countries. A benefit is the global coverage and reliance on expert and survey data. A shortcoming is that it measures perceptions rather than actual corruption, may not reflect private sector corruption, and could mask regional differences within countries.
+:::
+
+::: {.card title="Dataset 2 Preview"}
+```{r}
+head(cpi)
+```
+:::
+
+# Question 1
+
+## Row {height="500px"}
+
+### Column {width="50%"}
+
+**How is Gender Inequality Associated with Corruption?**
+
+This is the main question which drove us to select these data sets. Understanding this is important because gender inequality is often an indicator of other types of social injustices, such as unequal access to power, resources, and decision-making in the country. Also, corruption can weaken public institutions and reduce accountability, which may further limit opportunities for women in areas such as political representation, education, and employment.
+
+**Visualization**
+
+This scatterplot shows the relationship between the Gender Inequality Index and the Corruption Perceptions Index for each country. Each point represents a specific country, and viewers are able to hover over the points to see the country name and the exact values for both variables.
+
+**Observations**
+
+Overall, a clear positive relationship between the two variables can be seen, suggesting that **countries with higher levels of gender inequality also tend to have higher levels of corruption.** This pattern is somewhat expected and suggests that structural inequalities within a society may be connected to other socioeconomic weaknesses, such as war, poverty, infrastructure, health, political factors, etc. This may show that alleviating this inequality could reduce the other factors of corruption.
+
+### Column {width="50%"}
+
+```{r}
+#| warning: false
+plot_1 <- ggplot(cleaned_data, aes(x = GII, y = Corruption_Level, text = paste(
+      "Country:", Country,
+      "<br>Gender Inequality:", round(GII, 2),
+      "<br>Corruption Level:", round(Corruption_Level, 1)))) +
+  geom_point(size = 3, alpha = 0.7, color = "purple") +
+  labs(
+    title = "__________ Gender Inequality vs Corruption by Country __________",
+    x = "Gender Inequality Index (Further Right = More Inequality)",
+    y = "Corruption Level (Higher = More Corruption)"
+  ) +
+  theme_classic()
+
+# Add interactivity
+ggplotly(plot_1, tooltip = "text")
+```
+
+## Methods Used
+
+## Row {height="240px"}
+
+**Methods Used**
+
+To prepare the data for analysis, we used several data wrangling tools. We standardized country names using str_trim() and str_to_title() to ensure a proper join, then combined the datasets using left_join(). We converted important columns such as GII, CPI.2016.Score, and CPI.2016.Rank to numeric using mutate() and removed rows with missing values in these variables using filter(). We also created a new variable, Corruption_Level, which is an intermediate/novel transformation, by subtracting the CPI score from 100 so that higher values equal corruption, making the scatterplot easier to understand. Then we made a scatterplot with ggplot() to examine the relationship between Gender Inequality and Corruption Level and colored the points purple. The theme of the graph was made theme_classic() as a minor customization for a smoother look. Lastly, we made the visualization interactive using ggplotly() to display country names and values on hover.
+
+# Question 2
+
+## Row {height="500px"}
+
+### Column {width="50%"}
+
+**How does women’s representation in government relate to corruption levels?**
+
+This question helps us explore whether gender representation in political leadership may be related to corruption levels within countries. We believe that understanding this relationship is important because representation in government can influence policy decisions, accountability, and the fairness of institutions. We also believe that when women are underrepresented in political leadership, it can reflect inequalities in access to power and decision-making within a society. Corruption can also have a negative impact on democratic institutions and reduce public trust, which can limit progress toward gender equality.
+
+**Visualization**
+
+This scatterplot shows the relationship between the share of seats in parliament held by women and the corruption level for each country. Each point represents a country; on the x-axis, it shows the percentage of parliamentary seats held by women, while the y-axis represents the corruption level, where higher values indicate more corruption. Overall, the points are mostly scattered, but they show a slight negative, downward sloping correlation where countries with higher female representation in parliament tend to have lower corruption levels.
+
+**Observations**
+
+This graph shows that countries with **more** **inclusive political systems are more likely to have stronger governance and accountability.** However, as we can see, the relationship is not very strong, which means that other factors such as economic development, political stability, education, and institutional strength may also play important roles in influencing corruption levels.
+
+### Column {width="50%"}
+
+```{r}
+#| warning: false
+
+plot_2 <- ggplot(cleaned_data, aes(x = Seats_parliament, y = Corruption_Level, text = paste(
+        "Country:", Country,
+        "<br>% Seats in Parliament:", round(Seats_parliament, 1),
+        "<br>Corruption Level:", round(Corruption_Level, 1)))) +
+  geom_point(size = 3, alpha = 0.7, color = "purple") +   
+  labs(
+    title = "_______ Female Representation in Parliament vs Corruption _______",
+    x = "Share of Seats in Parliament Held by Women (%)",
+    y = "Corruption Level (Higher = More Corruption)"
+  ) +
+  theme_classic()
+
+# Make interactive
+ggplotly(plot_2, tooltip = "text")
+```
+
+## Methods Used
+
+## Row {height="170px"}
+
+**Methods Used**
+
+For the analysis of female parliamentary representation and corruption, we used the same data cleaning and transformation steps as in Question 1. We reused the Corruption_Level variable and created another interactive scatterplot. This visualization allowed us to examine whether higher female representation in parliament is associated with lower corruption, and a clear trend (though trendline is not shown) is present.
+
+# Question 3
+
+## Row {height="500px"}
+
+### Column {width="40%"}
+
+**Are there regional patterns in gender inequality and corruption?**
+
+This question examines the patterns of gender inequality and corruption within countries grouped by region. By grouping countries based on their geographic region and comparing their corruption levels, we can see whether certain parts of the world tend to experience higher or lower corruption. This box plot groups each country by region, with regions shown on the x-axis and corruption level on the y-axis, where higher values indicate more corruption.
+
+**Visualization**
+
+Each box plot shows key measures of central tendency and distribution. Viewers can hover over each box to see the minimum, maximum, quartiles, and median corruption levels for the countries in that region, as well as additional statistics such as the range and interquartile range. This visualization helps show the distribution of corruption levels across different regions and makes patterns easier to observe.
+
+**Observations**
+
+From the visualization, we can see that **corruption levels vary greatly across regions.** For example, Europe and Central Asia have a lower overall median corruption level but show the greatest variability, with a wider range and interquartile range. In contrast, Sub-Saharan Africa shows much higher overall corruption levels with lower variability, suggesting that governance challenges may be more common across many countries in that region. We can also observe outliers in some regions. For example, in the Asia-Pacific region, a few countries show substantially lower corruption levels than others, which contributes to a wider range within that region.
+
+Overall, these patterns suggest that regional factors such as political systems, economic development, history, and broader geopolitical influences may affect perceived corruption levels. The regional differences observed in this visualization indicate that geography and regional context may play an important role in shaping governance quality and, in turn, gender inequality across countries.
+
+### Column {width="60%"}
+
+```{r}
+#| warning: false
+
+plot_3 <- ggplot(cleaned_data, aes(x = Region, y = Corruption_Level, fill = Region,
+    text = paste(
+      "Country:", Country,
+      "<br>Region:", Region,
+      "<br>Corruption Level:", round(Corruption_Level, 1),
+      "<br>Gender Inequality:", round(GII, 2)
+    ))) +
+  geom_boxplot(alpha = 0.5) +
+  labs(
+    title = "__________ Corruption Levels by Region __________",
+    x = "Region",
+    y = "Corruption Level (Higher = More Corruption)"
+  ) +
+  theme_classic() + theme(
+    axis.text.x = element_blank(),   # Remove x-axis labels (too long, overlapping)
+    axis.ticks.x = element_blank(), 
+  )
+
+# Make interactive
+ggplotly(plot_3, tooltip = "text")
+```
+
+## Methods Used
+
+## Row {height="170px"}
+
+**Methods Used**
+
+Our last analysis on regional patterns in gender inequality and corruption used the same previously cleaned and wrangled data points. We used the region variable directly as categories to make a boxplot showing the distribution of corruption levels across different major regions of the world. We did fill = Region to color-code regions and added interactivity to show summary statistics on hover.
+
+# Conclusion
+
+## Row {height="700px"}
+
+::: {.card title="Major Takeaways"}
+This analysis examined the relationship between gender inequality and corruption across countries using global development data. **One major insight** from the visualizations is the relationship between gender inequality and corruption levels. Countries with higher gender inequality often show higher levels of perceived corruption, while countries with lower inequality tend to have lower corruption levels. This suggests that stronger governance systems and more equal social structures may reinforce each other. When institutions are more transparent and accountable, opportunities for women in areas like education, health, and economic participation also tend to improve.
+
+**Another key takeaway** is the presence of regional patterns and outliers. Certain regions show clusters of countries with similar characteristics, showing that geography, history, and political structures may influence both corruption and gender inequality. However, the data also reveals several outlier countries that do not follow the general trend. Some countries have moderate levels of gender inequality but relatively low corruption, while others show the opposite pattern. These exceptions demonstrate that additional factors such as economic development, government policies, and institutional strength also play a role.
+
+**A third takeaway** from the analysis is the potential relationship between female political representation and corruption levels. Countries with a higher share of women in parliament often appear to have lower corruption levels. While this may not prove causation, it suggests that greater political representation for women may be associated with stronger governance.
+:::
+
+::: {.card title="Considerations"}
+**There are several limitations** that may affect whether our analysis accurately estimates the relationship between the variables. The CPI is based on perceived corruption rather than actual corruption, meaning it reflects expert opinions and survey responses instead of direct measurements. This could lead to either overestimation or underestimation depending on how corruption is perceived in different countries.
+
+Additionally, both datasets use country-level averages, which may hide regional or local inequalities within countries and could underestimate the true variation in gender inequality or corruption. The datasets also come from different time periods, with the GII using more recent data while the CPI values are mostly from 2012–2016. Because of these limitations, our analysis should be interpreted as showing general patterns rather than exact or unbiased measurements.
+:::
+
+::: {.card title="Future Directions"}
+**To better answer our big picture questions,** we could reduce the limitations and inaccuracies of the datasets. Firstly, we could use more recent datasets to reduce the time mismatch. We could also examine more subnational or regional data within countries, especially in countries with higher gender inequality and corruption, to uncover local patterns hidden by national averages and understand where inequality is higher or lower within a nation and what contributes to it. Next, we could include other useful variables in our analysis, such as labor force participation, maternal mortality rate, and the education gap, to pull more specific insights. Lastly, we could examine gender-diverse populations. These would help better answer our big picture question because it would make our analysis more inclusive and accurate, incorporating more interesting aspects.
+:::
+
+# Authors
+
+About our group!
+
+## Adiba Saadullah
+## Row {height="170px"}
+::: {.card title="Adiba Saadullah"}
+Adiba Saadullah (University of Washington; adibas\@uw.edu) is passionate about social justice and has experience advocating for equity through her involvement with Students for Justice at Bellevue College, which strengthened her interest in understanding how structural inequalities affect communities. The datasets in this project sparked her interest in exploring how gender inequality and governance issues may be connected. She is an undergraduate student studying Informatics with a strong interest in product management, data-driven decision making, and building technology that addresses social challenges.
+:::
+
+## Amina Ali
+## Row {height="170px"}
+::: {.card title="Amina Ali"}
+Amina Ali (University of Washington; aamina04\@uw.edu) is passionate about understanding global development and the role that data plays in revealing social inequalities. Her interest in this project grew from exploring how gender inequality and corruption can impact governance and everyday life across different countries. Working with these datasets allowed her to analyze patterns in global indicators and better understand how institutional structures influence equity. She is an undergraduate student studying Informatics with interests in data science, User experience, and using data-driven insights to address complex social issues. Ultimately improving technology to be more inclusive and accessible.
+:::
+
+## Khadija Saho
+## Row {height="170px"}
+::: {.card title="Khadija Saho"}
+Khadija Saho (University of Washington; kssaho\@uw.edu) is interested in exploring the relationship between corruption and gender equity, particularly how corruption in institutions can limit access to resources and opportunities for women and marginalized communities. She is an Informatics student involved in organizations such as ColorStack, Rewriting the Code, NSBE, and Management Leadership for Tomorrow, and is passionate about using data to understand user behavior and design more ethical and inclusive technology systems.
+:::
+
+## GenAI Note
+## Row {height="100px"}
+GenAI Note: ChatGPT was used responsibly to assist with formatting this dashboard, organizing written responses to align with the project rubric, and for improving clarity and grammar. All analysis, visualizations, and interpretations in this project were done by the authors.
